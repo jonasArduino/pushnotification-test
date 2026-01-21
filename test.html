@@ -3,36 +3,102 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Auto Push Notification</title>
+  <title>Advanced Push Notification Demo</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 50px;
+      background: #f0f0f0;
+    }
+    #status {
+      margin-top: 20px;
+      font-size: 1.2em;
+      color: #333;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 1em;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
 </head>
 <body>
-  <h1>Push Notification Demo</h1>
-  <p>If you allow notifications, you will get a "Hello World" message every minute.</p>
+  <h1>Advanced Push Notification Demo</h1>
+  <p>Notifications will appear every minute with icon, sound, and timestamp.</p>
+  <div id="status">Requesting notification permission...</div>
+  <button id="retryBtn" style="display:none;">Retry Permission</button>
 
   <script>
+    const statusEl = document.getElementById('status');
+    const retryBtn = document.getElementById('retryBtn');
+
+    const notificationIcon = 'https://cdn-icons-png.flaticon.com/512/1828/1828817.png'; // Example icon
+    const notificationSound = 'https://www.soundjay.com/buttons/sounds/button-16.mp3';   // Example sound
+
+    let notificationInterval;
+
     async function initNotifications() {
-      // Request permission on page load
-      if (Notification.permission !== 'granted') {
+      // Request permission if not already granted
+      if (Notification.permission === 'granted') {
+        startNotifications();
+      } else if (Notification.permission === 'denied') {
+        statusEl.textContent = 'Notifications blocked. Please allow them.';
+        retryBtn.style.display = 'inline-block';
+      } else {
         const permission = await Notification.requestPermission();
-        if (permission !== 'granted') {
-          alert('Notifications are blocked. Enable them in your browser to see messages.');
-          return;
+        if (permission === 'granted') {
+          startNotifications();
+        } else {
+          statusEl.textContent = 'Notifications denied. Click retry to enable.';
+          retryBtn.style.display = 'inline-block';
         }
       }
-
-      // Function to show notification
-      function showNotification() {
-        if (Notification.permission === 'granted') {
-          new Notification('Hello World');
-        }
-      }
-
-      // Show immediately and then every 1 minute
-      showNotification();
-      setInterval(showNotification, 60000); // 60000ms = 1 minute
     }
 
-    // Initialize notifications
+    function playSound() {
+      const audio = new Audio(notificationSound);
+      audio.play().catch(() => {
+        console.log('Sound blocked by browser.');
+      });
+    }
+
+    function showNotification() {
+      if (Notification.permission !== 'granted') return;
+
+      const now = new Date();
+      const timeString = now.toLocaleTimeString();
+
+      const notification = new Notification('Hello World', {
+        body: `Current time: ${timeString}`,
+        icon: notificationIcon,
+        badge: notificationIcon, // small icon on mobile
+      });
+
+      playSound();
+    }
+
+    function startNotifications() {
+      statusEl.textContent = 'Notifications active. You will receive messages every minute.';
+      retryBtn.style.display = 'none';
+      showNotification(); // Show immediately
+      notificationInterval = setInterval(showNotification, 60000); // Every 1 minute
+    }
+
+    retryBtn.addEventListener('click', () => {
+      retryBtn.style.display = 'none';
+      statusEl.textContent = 'Requesting permission...';
+      initNotifications();
+    });
+
+    // Initialize on page load
     window.onload = initNotifications;
   </script>
 </body>
