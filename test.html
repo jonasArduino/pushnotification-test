@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auto Push Notification</title>
+</head>
+<body>
+  <h1>Push Notification Demo</h1>
+  <p>If you allow notifications, you will get a "Hello World" message every minute.</p>
+
+  <script>
+    async function initNotifications() {
+      // Request permission on page load
+      if (Notification.permission !== 'granted') {
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+          alert('Notifications are blocked. Enable them in your browser to see messages.');
+          return;
+        }
+      }
+
+      // Function to show notification
+      function showNotification() {
+        if (Notification.permission === 'granted') {
+          new Notification('Hello World');
+        }
+      }
+
+      // Show immediately and then every 1 minute
+      showNotification();
+      setInterval(showNotification, 60000); // 60000ms = 1 minute
+    }
+
+    // Initialize notifications
+    window.onload = initNotifications;
+  </script>
+</body>
+</html>
